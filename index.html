@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#05070d">
+<meta name="description" content="KAR Installer - gestionnaire d'applications Windows avec Winget et PowerShell">
+<title>KAR Installer</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#05070d;
+    --bg2:#080c14;
+    --panel:#0c121d;
+    --panel2:#111927;
+    --border:#ffffff12;
+    --border2:#ffffff1d;
+    --text:#f5f7fb;
+    --muted:#8c96a8;
+    --blue:#268cff;
+    --blue2:#006eff;
+    --purple:#814dff;
+    --green:#35e6a0;
+    --red:#ff5577;
+    --yellow:#ffc857;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(
+            circle at 10% 0%,
+            #167dff20,
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 0%,
+            #7b3cff18,
+            transparent 28%
+        ),
+        var(--bg);
+
+    color:var(--text);
+
+    font-family:
+        Inter,
+        Segoe UI,
+        Arial,
+        sans-serif;
+
+    overflow-x:hidden;
+}
+
+body:after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+
+    background-image:
+        linear-gradient(#ffffff06 1px,transparent 1px),
+        linear-gradient(90deg,#ffffff06 1px,transparent 1px);
+
+    background-size:50px 50px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent
+        );
+}
+
+button,
+input,
+textarea,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+a{
+    text-decoration:none;
+    color:inherit;
+}
+
+/* ===============================
+   HEADER
+================================ */
+
+.header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+
+    height:72px;
+
+    z-index:1000;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 4%;
+
+    background:#05070de8;
+
+    backdrop-filter:blur(20px);
+
+    border-bottom:1px solid var(--border);
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:11px;
+
+    font-weight:800;
+    font-size:19px;
+}
+
+.logo-box{
+    width:40px;
+    height:40px;
+
+    display:grid;
+    place-items:center;
+
+    border-radius:12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--blue),
+            var(--purple)
+        );
+
+    box-shadow:
+        0 0 35px #268cff35;
+}
+
+.logo-box span{
+    font-size:21px;
+    font-weight:900;
+}
+
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.header-button{
+    padding:9px 13px;
+
+    border-radius:10px;
+
+    color:#a9b1c0;
+
+    background:#ffffff07;
+
+    border:1px solid var(--border);
+
+    transition:.2s;
+}
+
+.header-button:hover{
+    color:white;
+    background:#ffffff0e;
+}
+
+.mobile-button{
+    display:none;
+
+    border:0;
+
+    background:none;
+
+    color:white;
+
+    font-size:25px;
+}
+
+/* ===============================
+   LAYOUT
+================================ */
+
+.app-layout{
+    display:flex;
+
+    min-height:100vh;
+
+    padding-top:72px;
+}
+
+/* ===============================
+   SIDEBAR
+================================ */
+
+.sidebar{
+    position:fixed;
+
+    top:72px;
+    bottom:0;
+    left:0;
+
+    width:240px;
+
+    padding:22px 15px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #080d16f2,
+            #070a11f2
+        );
+
+    border-right:1px solid var(--border);
+
+    overflow-y:auto;
+}
+
+.sidebar-title{
+    padding:8px 12px;
+
+    color:#687386;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+}
+
+.side-item{
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    gap:11px;
+
+    padding:11px 12px;
+
+    margin:3px 0;
+
+    border:0;
+    border-radius:10px;
+
+    color:#8e98aa;
+
+    background:transparent;
+
+    text-align:left;
+
+    transition:.2s;
+}
+
+.side-item:hover{
+    color:white;
+    background:#ffffff08;
+}
+
+.side-item.active{
+    color:white;
+
+    background:
+        linear-gradient(
+            90deg,
+            #268cff20,
+            #784cff10
+        );
+
+    border:1px solid #268cff20;
+}
+
+.side-icon{
+    width:23px;
+
+    text-align:center;
+}
+
+.side-count{
+    margin-left:auto;
+
+    color:#657083;
+
+    font-size:11px;
+}
+
+/* ===============================
+   MAIN
+================================ */
+
+.main{
+    width:100%;
+
+    margin-left:240px;
+
+    padding:35px 4% 80px;
+}
+
+.page{
+    max-width:1400px;
+
+    margin:auto;
+}
+
+/* ===============================
+   HERO
+================================ */
+
+.hero{
+    position:relative;
+
+    padding:35px;
+
+    margin-bottom:25px;
+
+    overflow:hidden;
+
+    border-radius:24px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #101d33,
+            #100d1d
+        );
+
+    border:1px solid var(--border);
+}
+
+.hero:before{
+    content:"";
+
+    position:absolute;
+
+    width:300px;
+    height:300px;
+
+    right:-120px;
+    top:-160px;
+
+    border-radius:50%;
+
+    background:#268cff;
+
+    filter:blur(100px);
+
+    opacity:.18;
+}
+
+.hero-content{
+    position:relative;
+
+    z-index:1;
+}
+
+.hero-badge{
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    padding:7px 11px;
+
+    border-radius:50px;
+
+    color:#7fbaff;
+
+    background:#268cff12;
+
+    border:1px solid #268cff30;
+
+    font-size:12px;
+
+    margin-bottom:15px;
+}
+
+.online{
+    width:6px;
+    height:6px;
+
+    border-radius:50%;
+
+    background:var(--green);
+
+    box-shadow:
+        0 0 12px var(--green);
+}
+
+.hero h1{
+    font-size:
+        clamp(
+            34px,
+            5vw,
+            60px
+        );
+
+    letter-spacing:-3px;
+
+    line-height:1;
+
+    margin-bottom:15px;
+}
+
+.gradient{
+    background:
+        linear-gradient(
+            90deg,
+            white,
+            #5bb5ff,
+            #9b6aff
+        );
+
+    -webkit-background-clip:text;
+    background-clip:text;
+
+    color:transparent;
+}
+
+.hero p{
+    max-width:720px;
+
+    color:var(--muted);
+
+    line-height:1.65;
+
+    font-size:15px;
+}
+
+/* ===============================
+   SEARCH
+================================ */
+
+.search-area{
+    margin-bottom:25px;
+}
+
+.search-wrapper{
+    position:relative;
+}
+
+.search-icon{
+    position:absolute;
+
+    left:18px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:#697487;
+
+    font-size:20px;
+}
+
+.search-input{
+    width:100%;
+
+    height:56px;
+
+    padding:
+        0
+        110px
+        0
+        50px;
+
+    color:white;
+
+    background:#ffffff07;
+
+    border:1px solid var(--border2);
+
+    border-radius:14px;
+
+    outline:none;
+
+    transition:.2s;
+}
+
+.search-input:focus{
+    border-color:#268cff60;
+
+    box-shadow:
+        0 0 0 4px #268cff0c;
+}
+
+.search-input::placeholder{
+    color:#657083;
+}
+
+.search-clear{
+    position:absolute;
+
+    right:10px;
+    top:50%;
+
+    transform:translateY(-50%);
+
+    border:0;
+
+    padding:8px 11px;
+
+    border-radius:8px;
+
+    color:#8e98aa;
+
+    background:#ffffff08;
+}
+
+.search-clear:hover{
+    color:white;
+}
+
+/* ===============================
+   FILTERS
+================================ */
+
+.filters{
+    display:flex;
+
+    gap:8px;
+
+    margin-top:13px;
+
+    overflow-x:auto;
+
+    padding-bottom:5px;
+}
+
+.filter{
+    flex-shrink:0;
+
+    border:1px solid var(--border);
+
+    background:#ffffff06;
+
+    color:#8993a6;
+
+    padding:9px 14px;
+
+    border-radius:10px;
+
+    transition:.2s;
+}
+
+.filter:hover{
+    color:white;
+}
+
+.filter.active{
+    color:white;
+
+    border-color:#268cff45;
+
+    background:
+        linear-gradient(
+            135deg,
+            #268cff20,
+            #784cff15
+        );
+}
+
+/* ===============================
+   TOOLBAR
+================================ */
+
+.toolbar{
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:15px;
+}
+
+.result-text{
+    color:#737e91;
+
+    font-size:13px;
+}
+
+.toolbar-actions{
+    display:flex;
+
+    gap:8px;
+}
+
+.small-button{
+    border:1px solid var(--border);
+
+    background:#ffffff07;
+
+    color:#a4adbc;
+
+    padding:8px 12px;
+
+    border-radius:9px;
+
+    font-size:12px;
+}
+
+.small-button:hover{
+    color:white;
+
+    background:#ffffff0d;
+}
+
+/* ===============================
+   APP GRID
+================================ */
+
+.apps{
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0,1fr)
+        );
+
+    gap:14px;
+}
+
+.app{
+    position:relative;
+
+    padding:20px;
+
+    min-height:220px;
+
+    border-radius:17px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff08,
+            #ffffff03
+        );
+
+    border:1px solid var(--border);
+
+    transition:
+        transform .25s,
+        border-color .25s,
+        background .25s;
+}
+
+.app:hover{
+    transform:translateY(-4px);
+
+    border-color:#268cff45;
+
+    background:#ffffff0b;
+}
+
+.app.selected{
+    border-color:#35e6a055;
+
+    box-shadow:
+        0 0 0 1px #35e6a010,
+        0 10px 35px #35e6a008;
+}
+
+.app-top{
+    display:flex;
+
+    gap:12px;
+
+    align-items:center;
+
+    margin-bottom:15px;
+}
+
+.app-icon{
+    width:48px;
+    height:48px;
+
+    display:grid;
+    place-items:center;
+
+    flex-shrink:0;
+
+    border-radius:13px;
+
+    font-size:23px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #268cff22,
+            #784cff20
+        );
+
+    border:1px solid #ffffff0e;
+}
+
+.app-name{
+    font-weight:750;
+
+    font-size:16px;
+}
+
+.app-publisher{
+    color:#697487;
+
+    font-size:11px;
+
+    margin-top:3px;
+}
+
+.app-description{
+    color:#8993a6;
+
+    font-size:13px;
+
+    line-height:1.55;
+
+    min-height:62px;
+}
+
+.app-meta{
+    display:flex;
+
+    gap:7px;
+
+    margin:12px 0;
+
+    flex-wrap:wrap;
+}
+
+.tag{
+    padding:4px 7px;
+
+    border-radius:6px;
+
+    color:#7f899b;
+
+    background:#ffffff06;
+
+    border:1px solid #ffffff09;
+
+    font-size:10px;
+}
+
+.app-bottom{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:8px;
+
+    margin-top:13px;
+}
+
+.app-id{
+    color:#566174;
+
+    font-family:Consolas,monospace;
+
+    font-size:9px;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+    white-space:nowrap;
+}
+
+.install{
+    flex-shrink:0;
+
+    border:0;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #268cff,
+            #7046ed
+        );
+
+    padding:8px 12px;
+
+    border-radius:8px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    transition:.2s;
+}
+
+.install:hover{
+    filter:brightness(1.15);
+
+    transform:translateY(-1px);
+}
+
+.install.installed{
+    background:#35e6a018;
+
+    color:#52eeb0;
+
+    border:1px solid #35e6a030;
+}
+
+/* ===============================
+   EMPTY
+================================ */
+
+.empty{
+    display:none;
+
+    padding:80px 20px;
+
+    text-align:center;
+
+    color:#687386;
+}
+
+.empty-icon{
+    font-size:42px;
+
+    margin-bottom:15px;
+}
+
+/* ===============================
+   INSTALL CENTER
+================================ */
+
+.install-center{
+    margin-top:35px;
+
+    padding:25px;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0d1828,
+            #100c1c
+        );
+
+    border:1px solid var(--border);
+}
+
+.install-center-header{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+    margin-bottom:20px;
+}
+
+.install-center h2{
+    font-size:20px;
+}
+
+.selection-count{
+    color:#6f7a8d;
+
+    font-size:12px;
+}
+
+.selected-apps{
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:8px;
+
+    min-height:38px;
+}
+
+.selected{
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    padding:7px 9px;
+
+    border-radius:8px;
+
+    background:#ffffff08;
+
+    border:1px solid #ffffff10;
+
+    font-size:11px;
+}
+
+.selected-remove{
+    border:0;
+
+    background:none;
+
+    color:#ff607d;
+}
+
+/* ===============================
+   WINGET PANEL
+================================ */
+
+.winget-panel{
+    margin-top:20px;
+}
+
+.winget-panel-title{
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    margin-bottom:8px;
+}
+
+.winget-panel-title span{
+    color:#7f899b;
+
+    font-size:11px;
+}
+
+.code{
+    width:100%;
+
+    min-height:170px;
+
+    resize:vertical;
+
+    padding:15px;
+
+    color:#8df0c4;
+
+    background:#020307;
+
+    border:1px solid #ffffff10;
+
+    border-radius:12px;
+
+    outline:none;
+
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    font-size:11px;
+
+    line-height:1.6;
+}
+
+.install-controls{
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:9px;
+
+    margin-top:12px;
+}
+
+/* ===============================
+   POWER SHELL
+================================ */
+
+.ps-panel{
+    margin-top:15px;
+
+    padding:20px;
+
+    border-radius:14px;
+
+    background:#ffffff04;
+
+    border:1px solid #ffffff09;
+}
+
+.ps-panel h3{
+    font-size:14px;
+
+    margin-bottom:7px;
+}
+
+.ps-panel p{
+    color:#727d90;
+
+    font-size:11px;
+
+    line-height:1.5;
+
+    margin-bottom:12px;
+}
+
+/* ===============================
+   STATS
+================================ */
+
+.stats{
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            1fr
+        );
+
+    gap:10px;
+
+    margin-top:20px;
+}
+
+.stat{
+    padding:18px;
+
+    text-align:center;
+
+    border-radius:13px;
+
+    background:#ffffff05;
+
+    border:1px solid #ffffff09;
+}
+
+.stat strong{
+    display:block;
+
+    font-size:23px;
+
+    margin-bottom:4px;
+}
+
+.stat span{
+    color:#6e798b;
+
+    font-size:10px;
+}
+
+/* ===============================
+   FOOTER
+================================ */
+
+footer{
+    margin-top:50px;
+
+    padding:30px;
+
+    text-align:center;
+
+    color:#596477;
+
+    border-top:1px solid var(--border);
+
+    font-size:11px;
+}
+
+/* ===============================
+   TOAST
+================================ */
+
+.toast{
+    position:fixed;
+
+    right:20px;
+    bottom:20px;
+
+    z-index:5000;
+
+    max-width:330px;
+
+    padding:13px 16px;
+
+    border-radius:11px;
+
+    background:#121a27f5;
+
+    border:1px solid #ffffff16;
+
+    box-shadow:
+        0 15px 50px #00000055;
+
+    transform:
+        translateY(100px);
+
+    opacity:0;
+
+    transition:.3s;
+
+    font-size:12px;
+}
+
+.toast.show{
+    transform:translateY(0);
+
+    opacity:1;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media(max-width:1100px){
+
+    .apps{
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0,1fr)
+            );
+    }
+}
+
+@media(max-width:800px){
+
+    .sidebar{
+        display:none;
+    }
+
+    .main{
+        margin-left:0;
+    }
+
+    .header-actions{
+        display:none;
+    }
+
+    .mobile-button{
+        display:block;
+    }
+
+    .apps{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
+    }
+}
+
+@media(max-width:500px){
+
+    .main{
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+    .hero{
+        padding:25px;
+    }
+
+    .hero h1{
+        letter-spacing:-2px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .toolbar{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===================================
+     HEADER
+=================================== -->
+
+<header class="header">
+
+<a
+    class="logo"
+    href="#">
+
+    <div class="logo-box">
+        <span>K</span>
+    </div>
+
+    <span>KAR Installer</span>
+
+</a>
+
+<div class="header-actions">
+
+<button
+    class="header-button"
+    onclick="showAll()">
+
+    Applications
+
+</button>
+
+<button
+    class="header-button"
+    onclick="selectRecommended()">
+
+    Recommandées
+
+</button>
+
+<button
+    class="header-button"
+    onclick="goInstall()">
+
+    Installation
+
+</button>
+
+</div>
+
+<button
+    class="mobile-button"
+    onclick="toggleSidebar()">
+
+    ☰
+
+</button>
+
+</header>
+
+
+<!-- ===================================
+     LAYOUT
+=================================== -->
+
+<div class="app-layout">
+
+
+<!-- ===================================
+     SIDEBAR
+=================================== -->
+
+<aside
+    class="sidebar"
+    id="sidebar">
+
+<div class="sidebar-title">
+Catalogue
+</div>
+
+<button
+    class="side-item active"
+    onclick="filterApps('all',this)">
+
+    <span class="side-icon">▦</span>
+    <span>Toutes les apps</span>
+
+    <span
+        class="side-count"
+        id="allCount">
+        0
+    </span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('browser',this)">
+
+    <span class="side-icon">🌐</span>
+    <span>Navigateurs</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('gaming',this)">
+
+    <span class="side-icon">🎮</span>
+    <span>Jeux & Gaming</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('development',this)">
+
+    <span class="side-icon">💻</span>
+    <span>Développement</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('media',this)">
+
+    <span class="side-icon">🎬</span>
+    <span>Multimédia</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('utility',this)">
+
+    <span class="side-icon">⚙️</span>
+    <span>Utilitaires</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="filterApps('communication',this)">
+
+    <span class="side-icon">💬</span>
+    <span>Communication</span>
+
+</button>
+
+
+<div
+    class="sidebar-title"
+    style="margin-top:22px">
+
+    Installation
+</div>
+
+
+<button
+    class="side-item"
+    onclick="goInstall()">
+
+    <span class="side-icon">📦</span>
+    <span>Ma sélection</span>
+
+    <span
+        class="side-count"
+        id="selectionSide">
+        0
+    </span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="copyWinget()">
+
+    <span class="side-icon">⌨️</span>
+    <span>Winget</span>
+
+</button>
+
+
+<button
+    class="side-item"
+    onclick="downloadPS1()">
+
+    <span class="side-icon">▣</span>
+    <span>PowerShell</span>
+
+</button>
+
+</aside>
+
+
+<!-- ===================================
+     MAIN
+=================================== -->
+
+<main class="main">
+
+<div class="page">
+
+
+<!-- ===================================
+     HERO
+=================================== -->
+
+<section class="hero">
+
+<div class="hero-content">
+
+<div class="hero-badge">
+
+<span class="online"></span>
+
+KAR INSTALLER • WINDOWS
+
+</div>
+
+<h1>
+
+Votre catalogue
+<span class="gradient">
+Windows.
+</span>
+
+</h1>
+
+<p>
+
+Recherchez vos logiciels et jeux,
+sélectionnez-les puis préparez
+automatiquement leur installation
+avec Winget et PowerShell.
+
+</p>
+
+</div>
+
+</section>
+
+
+<!-- ===================================
+     SEARCH
+=================================== -->
+
+<section
+    class="search-area">
+
+<div class="search-wrapper">
+
+<span class="search-icon">
+⌕
+</span>
+
+<input
+    id="search"
+    class="search-input"
+    type="search"
+    placeholder="Rechercher une application, un jeu, un logiciel ou un ID Winget..."
+    autocomplete="off">
+
+<button
+    class="search-clear"
+    onclick="clearSearch()">
+
+    ×
+
+</button>
+
+</div>
+
+
+<div class="filters">
+
+<button
+    class="filter active"
+    onclick="filterApps('all',this)">
+
+    Toutes
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('gaming',this)">
+
+    🎮 Jeux
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('browser',this)">
+
+    🌐 Navigateurs
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('development',this)">
+
+    💻 Dev
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('media',this)">
+
+    🎬 Multimédia
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('utility',this)">
+
+    ⚙️ Utilitaires
+
+</button>
+
+<button
+    class="filter"
+    onclick="filterApps('communication',this)">
+
+    💬 Communication
+
+</button>
+
+</div>
+
+</section>
+
+
+<!-- ===================================
+     TOOLBAR
+=================================== -->
+
+<div class="toolbar">
+
+<span
+    class="result-text"
+    id="resultText">
+
+    Chargement...
+
+</span>
+
+<div class="toolbar-actions">
+
+<button
+    class="small-button"
+    onclick="selectRecommended()">
+
+    Sélection recommandée
+
+</button>
+
+<button
+    class="small-button"
+    onclick="clearSelection()">
+
+    Effacer
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- ===================================
+     APPLICATIONS
+=================================== -->
+
+<section>
+
+<div
+    class="apps"
+    id="apps">
+</div>
+
+
+<div
+    class="empty"
+    id="empty">
+
+<div class="empty-icon">
+🔎
+</div>
+
+<h3>
+Aucun résultat
+</h3>
+
+<p>
+Aucune application ne correspond à votre recherche.
+</p>
+
+</div>
+
+</section>
+
+
+<!-- ===================================
+     INSTALLATION
+=================================== -->
+
+<section
+    class="install-center"
+    id="installation">
+
+<div class="install-center-header">
+
+<h2>
+Centre d'installation
+</h2>
+
+<span
+    class="selection-count"
+    id="selectionCount">
+
+0 application sélectionnée
+
+</span>
+
+</div>
+
+
+<div
+    class="selected-apps"
+    id="selectedApps">
+
+<span
+    style="
+    color:#687386;
+    font-size:12px;
+    ">
+
+    Sélectionnez des applications ci-dessus.
+
+</span>
+
+</div>
+
+
+<!-- WINGET -->
+
+<div
+    class="winget-panel">
+
+<div class="winget-panel-title">
+
+<strong>
+Commande Winget
+</strong>
+
+<span>
+PowerShell / Terminal Windows
+</span>
+
+</div>
+
+
+<textarea
+    id="commands"
+    class="code"
+    readonly
+    spellcheck="false"></textarea>
+
+
+<div class="install-controls">
+
+<button
+    class="btn btn-primary"
+    onclick="copyWinget()">
+
+    Copier Winget
+
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    onclick="downloadPS1()">
+
+    Télécharger .PS1
+
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    onclick="downloadBAT()">
+
+    Télécharger .CMD
+
+</button>
+
+
+<button
+    class="btn btn-secondary"
+    onclick="clearSelection()">
+
+    Tout effacer
+
+</button>
+
+</div>
+
+
+<div class="ps-panel">
+
+<h3>
+PowerShell / Winget
+</h3>
+
+<p>
+
+GitHub Pages ne peut pas exécuter directement une commande
+Windows sur votre ordinateur. Copiez la commande ou téléchargez
+le script puis exécutez-le localement avec PowerShell.
+
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- ===================================
+     STATS
+=================================== -->
+
+<section class="stats">
+
+<div class="stat">
+
+<strong id="statApps">
+0
+</strong>
+
+<span>
+Applications
+</span>
+
+</div>
+
+<div class="stat">
+
+<strong id="statGames">
+0
+</strong>
+
+<span>
+Jeux
+</span>
+
+</div>
+
+<div class="stat">
+
+<strong>
+WINGET
+</strong>
+
+<span>
+Package Manager
+</span>
+
+</div>
+
+<div class="stat">
+
+<strong>
+PS1
+</strong>
+
+<span>
+PowerShell
+</span>
+
+</div>
+
+</section>
+
+
+</div>
+
+</main>
+
+</div>
+
+
+<!-- ===================================
+     FOOTER
+=================================== -->
+
+<footer>
+
+KAR Installer · By Appia · Karl David
+
+<br><br>
+
+© 2026 KAR
+
+</footer>
+
+
+<div
+    class="toast"
+    id="toast">
+</div>
+
+
+<script>
+
+/* =====================================================
+   CATALOGUE KAR
+===================================================== */
+
+const apps = [
+
+{
+    name:"Google Chrome",
+    id:"Google.Chrome",
+    publisher:"Google",
+    category:"browser",
+    icon:"🌐",
+    description:"Navigateur web rapide.",
+    tags:["Browser","Web"],
+    recommended:true
+},
+
+{
+    name:"Mozilla Firefox",
+    id:"Mozilla.Firefox",
+    publisher:"Mozilla",
+    category:"browser",
+    icon:"🦊",
+    description:"Navigateur open source.",
+    tags:["Browser","Open Source"],
+    recommended:true
+},
+
+{
+    name:"Brave",
+    id:"Brave.Brave",
+    publisher:"Brave Software",
+    category:"browser",
+    icon:"🦁",
+    description:"Navigateur avec protection anti-tracking.",
+    tags:["Browser","Privacy"],
+    recommended:true
+},
+
+{
+    name:"Discord",
+    id:"Discord.Discord",
+    publisher:"Discord",
+    category:"communication",
+    icon:"💬",
+    description:"Chat, voix et communautés.",
+    tags:["Chat","Voice"],
+    recommended:true
+},
+
+{
+    name:"Telegram",
+    id:"Telegram.TelegramDesktop",
+    publisher:"Telegram",
+    category:"communication",
+    icon:"✈️",
+    description:"Messagerie multiplateforme.",
+    tags:["Chat","Messaging"],
+    recommended:false
+},
+
+{
+    name:"Zoom",
+    id:"Zoom.Zoom",
+    publisher:"Zoom",
+    category:"communication",
+    icon:"📹",
+    description:"Réunions et appels vidéo.",
+    tags:["Video","Meetings"],
+    recommended:false
+},
+
+{
+    name:"Steam",
+    id:"Valve.Steam",
+    publisher:"Valve",
+    category:"gaming",
+    icon:"🎮",
+    description:"Plateforme de jeux PC.",
+    tags:["Gaming","Launcher"],
+    recommended:true
+},
+
+{
+    name:"Epic Games Launcher",
+    id:"EpicGames.EpicGamesLauncher",
+    publisher:"Epic Games",
+    category:"gaming",
+    icon:"🎮",
+    description:"Launcher Epic Games.",
+    tags:["Gaming","Launcher"],
+    recommended:false
+},
+
+{
+    name:"GOG Galaxy",
+    id:"GOG.Galaxy",
+    publisher:"GOG",
+    category:"gaming",
+    icon:"🎮",
+    description:"Launcher de jeux GOG.",
+    tags:["Gaming","Launcher"],
+    recommended:false
+},
+
+{
+    name:"Ubisoft Connect",
+    id:"Ubisoft.Connect",
+    publisher:"Ubisoft",
+    category:"gaming",
+    icon:"🎮",
+    description:"Plateforme Ubisoft.",
+    tags:["Gaming","Launcher"],
+    recommended:false
+},
+
+{
+    name:"Visual Studio Code",
+    id:"Microsoft.VisualStudioCode",
+    publisher:"Microsoft",
+    category:"development",
+    icon:"💻",
+    description:"Éditeur de code moderne.",
+    tags:["Code","Microsoft"],
+    recommended:true
+},
+
+{
+    name:"Git",
+    id:"Git.Git",
+    publisher:"Git",
+    category:"development",
+    icon:"🔧",
+    description:"Contrôle de version Git.",
+    tags:["Git","Developer"],
+    recommended:true
+},
+
+{
+    name:"GitHub Desktop",
+    id:"GitHub.GitHubDesktop",
+    publisher:"GitHub",
+    category:"development",
+    icon:"🐙",
+    description:"Client graphique GitHub.",
+    tags:["GitHub","Git"],
+    recommended:false
+},
+
+{
+    name:"Python",
+    id:"Python.Python.3.13",
+    publisher:"Python Software Foundation",
+    category:"development",
+    icon:"🐍",
+    description:"Langage de programmation Python.",
+    tags:["Python","Dev"],
+    recommended:true
+},
+
+{
+    name:"Node.js",
+    id:"OpenJS.NodeJS",
+    publisher:"OpenJS",
+    category:"development",
+    icon:"🟢",
+    description:"Runtime JavaScript.",
+    tags:["JavaScript","Node"],
+    recommended:false
+},
+
+{
+    name:"7-Zip",
+    id:"7zip.7zip",
+    publisher:"7-Zip",
+    category:"utility",
+    icon:"📦",
+    description:"Gestionnaire d'archives.",
+    tags:["Archive","Utility"],
+    recommended:true
+},
+
+{
+    name:"Microsoft PowerToys",
+    id:"Microsoft.PowerToys",
+    publisher:"Microsoft",
+    category:"utility",
+    icon:"⚡",
+    description:"Outils avancés pour Windows.",
+    tags:["Windows","Tools"],
+    recommended:true
+},
+
+{
+    name:"Windows Terminal",
+    id:"Microsoft.WindowsTerminal",
+    publisher:"Microsoft",
+    category:"utility",
+    icon:"⌨️",
+    description:"Terminal moderne Windows.",
+    tags:["Terminal","Microsoft"],
+    recommended:true
+},
+
+{
+    name:"VLC",
+    id:"VideoLAN.VLC",
+    publisher:"VideoLAN",
+    category:"media",
+    icon:"🎬",
+    description:"Lecteur multimédia.",
+    tags:["Video","Audio"],
+    recommended:true
+},
+
+{
+    name:"OBS Studio",
+    id:"OBSProject.OBSStudio",
+    publisher:"OBS Project",
+    category:"media",
+    icon:"📹",
+    description:"Streaming et enregistrement.",
+    tags:["Streaming","Video"],
+    recommended:true
+},
+
+{
+    name:"Spotify",
+    id:"Spotify.Spotify",
+    publisher:"Spotify",
+    category:"media",
+    icon:"🎵",
+    description:"Musique et podcasts.",
+    tags:["Music","Audio"],
+    recommended:false
+},
+
+{
+    name:"Notepad++",
+    id:"Notepad++.Notepad++",
+    publisher:"Notepad++",
+    category:"development",
+    icon:"📝",
+    description:"Éditeur de texte avancé.",
+    tags:["Editor","Text"],
+    recommended:false
+},
+
+{
+    name:"WinSCP",
+    id:"WinSCP.WinSCP",
+    publisher:"WinSCP",
+    category:"utility",
+    icon:"📁",
+    description:"Transfert de fichiers sécurisé.",
+    tags:["FTP","Files"],
+    recommended:false
+},
+
+{
+    name:"Docker Desktop",
+    id:"Docker.DockerDesktop",
+    publisher:"Docker",
+    category:"development",
+    icon:"🐳",
+    description:"Conteneurs Docker.",
+    tags:["Docker","Dev"],
+    recommended:false
+},
+
+{
+    name:"Postman",
+    id:"Postman.Postman",
+    publisher:"Postman",
+    category:"development",
+    icon:"🚀",
+    description:"Tests et développement API.",
+    tags:["API","Developer"],
+    recommended:false
+},
+
+{
+    name:"7-Zip Zstandard",
+    id:"7zip.7zip",
+    publisher:"7-Zip",
+    category:"utility",
+    icon:"📦",
+    description:"Outils d'archivage.",
+    tags:["Archive"],
+    recommended:false
+},
+
+{
+    name:"HandBrake",
+    id:"HandBrake.HandBrake",
+    publisher:"HandBrake",
+    category:"media",
+    icon:"🎞️",
+    description:"Conversion vidéo.",
+    tags:["Video","Converter"],
+    recommended:false
+},
+
+{
+    name:"GIMP",
+    id:"GIMP.GIMP",
+    publisher:"GIMP",
+    category:"media",
+    icon:"🎨",
+    description:"Édition d'images.",
+    tags:["Image","Design"],
+    recommended:false
+},
+
+{
+    name:"Blender",
+    id:"BlenderFoundation.Blender",
+    publisher:"Blender Foundation",
+    category:"media",
+    icon:"🧊",
+    description:"3D, animation et rendu.",
+    tags:["3D","Design"],
+    recommended:false
+}
+
+];
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let category = "all";
+
+let selected = new Set();
+
+let installed = new Set();
+
+
+/* =====================================================
+   DOM
+===================================================== */
+
+const search =
+    document.getElementById("search");
+
+const appsContainer =
+    document.getElementById("apps");
+
+const empty =
+    document.getElementById("empty");
+
+const commands =
+    document.getElementById("commands");
+
+const selectedApps =
+    document.getElementById("selectedApps");
+
+const selectionCount =
+    document.getElementById("selectionCount");
+
+const resultText =
+    document.getElementById("resultText");
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function render(){
+
+    const query =
+        search.value
+            .trim()
+            .toLowerCase();
+
+
+    const filtered =
+        apps.filter(app => {
+
+            const categoryMatch =
+                category === "all" ||
+                app.category === category;
+
+
+            const searchMatch =
+                !query ||
+
+                app.name
+                    .toLowerCase()
+                    .includes(query) ||
+
+                app.publisher
+                    .toLowerCase()
+                    .includes(query) ||
+
+                app.id
+                    .toLowerCase()
+                    .includes(query) ||
+
+                app.description
+                    .toLowerCase()
+                    .includes(query) ||
+
+                app.tags
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(query);
+
+
+            return (
+                categoryMatch &&
+                searchMatch
+            );
+
+        });
+
+
+    appsContainer.innerHTML = "";
+
+
+    resultText.textContent =
+        filtered.length +
+        " résultat" +
+        (
+            filtered.length > 1
+            ? "s"
+            : ""
+        );
+
+
+    empty.style.display =
+        filtered.length
+        ? "none"
+        : "block";
+
+
+    filtered.forEach(app => {
+
+        const card =
+            document.createElement("article");
+
+
+        card.className =
+            "app" +
+            (
+                selected.has(app.id)
+                ? " selected"
+                : ""
+            );
+
+
+        const isInstalled =
+            installed.has(app.id);
+
+
+        card.innerHTML = `
+
+<div class="app-top">
+
+<div class="app-icon">
+${app.icon}
+</div>
+
+<div>
+
+<div class="app-name">
+${escapeHTML(app.name)}
+</div>
+
+<div class="app-publisher">
+${escapeHTML(app.publisher)}
+</div>
+
+</div>
+
+</div>
+
+
+<div class="app-description">
+
+${escapeHTML(app.description)}
+
+</div>
+
+
+<div class="app-meta">
+
+${app.tags.map(tag =>
+    `<span class="tag">${escapeHTML(tag)}</span>`
+).join("")}
+
+</div>
+
+
+<div class="app-bottom">
+
+<span class="app-id">
+${escapeHTML(app.id)}
+</span>
+
+
+<button
+class="install ${isInstalled ? "installed" : ""}"
+onclick="toggleInstall('${escapeJS(app.id)}')">
+
+${isInstalled
+    ? "✓ Installé"
+    : selected.has(app.id)
+        ? "✓ Sélectionné"
+        : "Installer"}
+
+</button>
+
+</div>
+
+`;
+
+
+        appsContainer.appendChild(card);
+
+    });
+
+
+    updateSelection();
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+search.addEventListener(
+    "input",
+    render
+);
+
+
+function clearSearch(){
+
+    search.value = "";
+
+    render();
+
+    search.focus();
+
+}
+
+
+/* =====================================================
+   CATEGORY
+===================================================== */
+
+function filterApps(
+    newCategory,
+    button
+){
+
+    category =
+        newCategory;
+
+
+    document
+        .querySelectorAll(
+            ".filter,.side-item"
+        )
+        .forEach(
+            item =>
+                item.classList.remove(
+                    "active"
+                )
+        );
+
+
+    if(button){
+
+        button.classList.add(
+            "active"
+        );
+
+    }
+
+
+    render();
+
+}
+
+
+/* =====================================================
+   SHOW ALL
+===================================================== */
+
+function showAll(){
+
+    category = "all";
+
+    search.value = "";
+
+    render();
+
+}
+
+
+/* =====================================================
+   SELECT / INSTALL
+===================================================== */
+
+function toggleInstall(id){
+
+    if(installed.has(id)){
+
+        showToast(
+            "Cette application est déjà marquée comme installée."
+        );
+
+        return;
+
+    }
+
+
+    if(selected.has(id)){
+
+        selected.delete(id);
+
+        showToast(
+            "Application retirée."
+        );
+
+    }else{
+
+        selected.add(id);
+
+        showToast(
+            "Application ajoutée à la sélection."
+        );
+
+    }
+
+
+    render();
+
+}
+
+
+/* =====================================================
+   SELECTION
+===================================================== */
+
+function updateSelection(){
+
+    selectedApps.innerHTML = "";
+
+
+    if(selected.size === 0){
+
+        selectedApps.innerHTML = `
+
+<span
+style="
+color:#687386;
+font-size:12px;
+">
+
+Aucune application sélectionnée.
+
+</span>
+
+`;
+
+    }else{
+
+        selected.forEach(id => {
+
+            const app =
+                apps.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if(!app)
+                return;
+
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "selected";
+
+
+            item.innerHTML = `
+
+<span>
+${app.icon}
+${escapeHTML(app.name)}
+</span>
+
+<button
+class="selected-remove"
+onclick="toggleInstall('${escapeJS(app.id)}')">
+
+×
+</button>
+
+`;
+
+
+            selectedApps.appendChild(
+                item
+            );
+
+        });
+
+    }
+
+
+    const count =
+        selected.size;
+
+
+    selectionCount.textContent =
+        count +
+        (
+            count > 1
+            ? " applications sélectionnées"
+            : " application sélectionnée"
+        );
+
+
+    document.getElementById(
+        "selectionSide"
+    ).textContent =
+        count;
+
+
+    generateCommands();
+
+}
+
+
+/* =====================================================
+   WINGET
+===================================================== */
+
+function generateCommands(){
+
+    if(selected.size === 0){
+
+        commands.value =
+`# KAR Installer
+# Aucune application sélectionnée.
+
+# Exemple :
+# winget search chrome
+# winget install --id Google.Chrome --exact
+`;
+
+        return;
+
+    }
+
+
+    let output =
+
+`# ==========================================
+# KAR INSTALLER
+# Winget / PowerShell
+# ==========================================
+
+# Vérification de Winget
+winget --version
+
+# ==========================================
+# INSTALLATIONS
+# ==========================================
+
+`;
+
+
+    selected.forEach(id => {
+
+        output +=
+            "winget install --id " +
+            id +
+            " --exact --accept-source-agreements --accept-package-agreements\n";
+
+    });
+
+
+    commands.value =
+        output;
+
+}
+
+
+/* =====================================================
+   COPY WINGET
+===================================================== */
+
+async function copyWinget(){
+
+    try{
+
+        await navigator.clipboard.writeText(
+            commands.value
+        );
+
+        showToast(
+            "Commandes Winget copiées."
+        );
+
+    }catch{
+
+        commands.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+        showToast(
+            "Commandes copiées."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   DOWNLOAD PS1
+===================================================== */
+
+function downloadPS1(){
+
+    if(selected.size === 0){
+
+        showToast(
+            "Sélectionne au moins une application."
+        );
+
+        return;
+
+    }
+
+
+    let script =
+
+`# ==========================================
+# KAR INSTALLER
+# Script PowerShell Winget
+# ==========================================
+
+Write-Host ""
+Write-Host "KAR Installer" -ForegroundColor Cyan
+Write-Host "Préparation de l'installation..." -ForegroundColor Yellow
+Write-Host ""
+
+if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
+
+    Write-Host "Winget est introuvable." -ForegroundColor Red
+
+    Write-Host "Installez ou mettez à jour App Installer depuis Microsoft Store."
+
+    exit 1
+}
+
+Write-Host "Winget détecté." -ForegroundColor Green
+Write-Host ""
+
+`;
+
+
+    selected.forEach(id => {
+
+        script +=
+
+`Write-Host "Installation de ${id}..." -ForegroundColor Cyan
+winget install --id ${id} --exact --accept-source-agreements --accept-package-agreements
+
+`;
+
+    });
+
+
+    script +=
+
+`
+Write-Host ""
+Write-Host "KAR Installer : installation terminée." -ForegroundColor Green
+`;
+
+
+    downloadFile(
+        "KAR-Installer.ps1",
+        script,
+        "text/plain"
+    );
+
+
+    showToast(
+        "KAR-Installer.ps1 créé."
+    );
+
+}
+
+
+/* =====================================================
+   DOWNLOAD CMD
+===================================================== */
+
+function downloadBAT(){
+
+    if(selected.size === 0){
+
+        showToast(
+            "Sélectionne au moins une application."
+        );
+
+        return;
+
+    }
+
+
+    let script =
+
+`@echo off
+title KAR Installer
+color 0B
+
+echo.
+echo ==========================================
+echo          KAR INSTALLER
+echo ==========================================
+echo.
+
+winget --version
+
+if errorlevel 1 (
+    echo Winget est indisponible.
+    pause
+    exit /b 1
+)
+
+echo.
+
+`;
+
+
+    selected.forEach(id => {
+
+        script +=
+`echo Installation de ${id}...
+winget install --id ${id} --exact --accept-source-agreements --accept-package-agreements
+
+`;
+
+    });
+
+
+    script +=
+
+`
+echo.
+echo Installation terminee.
+pause
+`;
+
+
+    downloadFile(
+        "KAR-Installer.cmd",
+        script,
+        "text/plain"
+    );
+
+
+    showToast(
+        "KAR-Installer.cmd créé."
+    );
+
+}
+
+
+/* =====================================================
+   RECOMMENDED
+===================================================== */
+
+function selectRecommended(){
+
+    selected.clear();
+
+
+    apps
+        .filter(
+            app =>
+                app.recommended
+        )
+        .forEach(
+            app =>
+                selected.add(
+                    app.id
+                )
+        );
+
+
+    render();
+
+    goInstall();
+
+
+    showToast(
+        "Sélection recommandée chargée."
+    );
+
+}
+
+
+/* =====================================================
+   CLEAR
+===================================================== */
+
+function clearSelection(){
+
+    selected.clear();
+
+    render();
+
+    showToast(
+        "Sélection effacée."
+    );
+
+}
+
+
+/* =====================================================
+   GO INSTALL
+===================================================== */
+
+function goInstall(){
+
+    document
+        .getElementById(
+            "installation"
+        )
+        .scrollIntoView({
+            behavior:"smooth"
+        });
+
+}
+
+
+/* =====================================================
+   DOWNLOAD
+===================================================== */
+
+function downloadFile(
+    filename,
+    content,
+    type
+){
+
+    const blob =
+        new Blob(
+            [content],
+            {
+                type:type
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href = url;
+
+    a.download =
+        filename;
+
+
+    document.body.appendChild(
+        a
+    );
+
+
+    a.click();
+
+
+    a.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/* =====================================================
+   MOBILE SIDEBAR
+===================================================== */
+
+function toggleSidebar(){
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    if(
+        sidebar.style.display ===
+        "block"
+    ){
+
+        sidebar.style.display =
+            "";
+
+    }else{
+
+        sidebar.style.display =
+            "block";
+
+        sidebar.style.zIndex =
+            "999";
+
+    }
+
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+let toastTimeout;
+
+
+function showToast(message){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimeout
+    );
+
+
+    toastTimeout =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            2600
+        );
+
+}
+
+
+/* =====================================================
+   ESCAPE
+===================================================== */
+
+function escapeHTML(value){
+
+    return String(value)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+function escapeJS(value){
+
+    return String(value)
+        .replaceAll(
+            "\\",
+            "\\\\"
+        )
+        .replaceAll(
+            "'",
+            "\\'"
+        );
+
+}
+
+
+/* =====================================================
+   STATISTIQUES
+===================================================== */
+
+document.getElementById(
+    "statApps"
+).textContent =
+    apps.length;
+
+
+document.getElementById(
+    "statGames"
+).textContent =
+    apps.filter(
+        app =>
+            app.category ===
+            "gaming"
+    ).length;
+
+
+document.getElementById(
+    "allCount"
+).textContent =
+    apps.length;
+
+
+/* =====================================================
+   INITIALISATION
+===================================================== */
+
+render();
+
+</script>
+
+</body>
+</html>
